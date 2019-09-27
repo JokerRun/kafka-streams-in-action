@@ -72,7 +72,8 @@ public class MockDataProducer {
                 }
                 LOG.info("Record batch sent");
                 try {
-                    Thread.sleep(6000);
+                    Thread.sleep(100);
+//                    Thread.sleep(6000);
                 } catch (InterruptedException e) {
                     Thread.interrupted();
                 }
@@ -356,6 +357,34 @@ public class MockDataProducer {
                 LOG.info("Text batch sent");
                 try {
                     Thread.sleep(6000);
+                } catch (InterruptedException e) {
+                    Thread.interrupted();
+                }
+            }
+            LOG.info("Done generating text data");
+
+        };
+        executorService.submit(generateTask);
+    }
+    /**
+     *调整Topic为：helloworld-input
+     * @author Rico
+     * @date 2019/9/27 2:43 下午       
+     */
+    public static void produceRandomTextDataForHelloWorld() {
+        Runnable generateTask = () -> {
+            init();
+            int counter = 0;
+            while (counter++ < YELLING_APP_ITERATIONS) {
+                List<String> textValues = DataGenerator.generateRandomText();
+
+                for (String value : textValues) {
+                    ProducerRecord<String, String> record = new ProducerRecord<>("hello-world-input", null, value);
+                    producer.send(record, callback);
+                }
+                LOG.info("Text batch sent");
+                try {
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     Thread.interrupted();
                 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package bbejeck.chapter_3;
+package jerry.chapter_3;
 
 import bbejeck.chapter_3.service.SecurityDBService;
 import bbejeck.clients.producer.MockDataProducer;
@@ -29,12 +29,7 @@ import org.apache.kafka.streams.Consumed;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.ForeachAction;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KeyValueMapper;
-import org.apache.kafka.streams.kstream.Predicate;
-import org.apache.kafka.streams.kstream.Printed;
-import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.*;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +111,7 @@ public class ZMartKafkaStreamsAdvancedReqsApp {
 
         // used only to produce data for this application, not typical usage
         MockDataProducer.producePurchaseData();
-        Thread.sleep(2000);
+        
         KafkaStreams kafkaStreams = new KafkaStreams(builder.build(),streamsConfig);
         LOG.info("ZMart Advanced Requirements Kafka Streams Application Started");
         kafkaStreams.start();

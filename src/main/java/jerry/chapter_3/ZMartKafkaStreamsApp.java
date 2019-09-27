@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package bbejeck.chapter_3;
+package jerry.chapter_3;
 
 import bbejeck.clients.producer.MockDataProducer;
 import bbejeck.model.Purchase;
@@ -43,47 +43,35 @@ public class ZMartKafkaStreamsApp {
     private static final Logger LOG = LoggerFactory.getLogger(ZMartKafkaStreamsApp.class);
 
     public static void main(String[] args) throws Exception {
-
-
-        StreamsConfig streamsConfig = new StreamsConfig(getProperties());
-
+        MockDataProducer.producePurchaseData();
+        Thread.sleep(3000);
         Serde<Purchase> purchaseSerde = StreamsSerdes.PurchaseSerde();
         Serde<PurchasePattern> purchasePatternSerde = StreamsSerdes.PurchasePatternSerde();
         Serde<RewardAccumulator> rewardAccumulatorSerde = StreamsSerdes.RewardAccumulatorSerde();
         Serde<String> stringSerde = Serdes.String();
-
+        Serde<Long> longSerde = Serdes.Long();
         StreamsBuilder streamsBuilder = new StreamsBuilder();
+        //==============basic==============
+        KStream<String, Purchase> masked = streamsBuilder.stream("transactions", Consumed.with(stringSerde, purchaseSerde)).mapValues(p -> Purchase.builder(p).maskCreditCard().build());
+        masked.to("purchases",Produced.with(stringSerde,purchaseSerde));
+        masked.mapValues(p->PurchasePattern.builder(p).build()).to("parrern",Produced.with(stringSerde,purchasePatternSerde));
+        masked.mapValues(p->RewardAccumulator.builder(p).build()).to("reward",Produced.with(stringSerde,rewardAccumulatorSerde));
 
-        KStream<String,Purchase> purchaseKStream = streamsBuilder.stream("transactions", Consumed.with(stringSerde, purchaseSerde))
-                .mapValues(p -> Purchase.builder(p).maskCreditCard().build());
-        
-        KStream<String, PurchasePattern> patternKStream = purchaseKStream.mapValues(purchase -> PurchasePattern.builder(purchase).build());
-
-        patternKStream.print(Printed.<String, PurchasePattern>toSysOut().withLabel("patterns"));
-        patternKStream.to("patterns", Produced.with(stringSerde,purchasePatternSerde));
-
-        
-        KStream<String, RewardAccumulator> rewardsKStream = purchaseKStream.mapValues(purchase -> RewardAccumulator.builder(purchase).build());
-
-        rewardsKStream.print(Printed.<String, RewardAccumulator>toSysOut().withLabel("rewards"));
-        rewardsKStream.to("rewards", Produced.with(stringSerde,rewardAccumulatorSerde));
+        //==============Advance==============
+        masked.filter((k,v)->v.getPrice()>5.00).selectKey((k,v)->v.getPurchaseDate().getTime()).to("filtered-purchases",Produced.with(longSerde,purchaseSerde));
+        KStream<String, Purchase>[] branchs = masked.branch(((key, value) -> value.getDepartment().equalsIgnoreCase("coffee")), ((key, value) -> value.getDepartment().equalsIgnoreCase("electronics")));
+        branchs[0].to("coffee",Produced.with(stringSerde,purchaseSerde));
+        branchs[1].to("electronics",Produced.with(stringSerde,purchaseSerde));
 
 
-
-        purchaseKStream.print(Printed.<String, Purchase>toSysOut().withLabel("purchases"));
-        purchaseKStream.to("purchases", Produced.with(stringSerde,purchaseSerde));
-
-
-        // used only to produce data for this application, not typical usage
-        MockDataProducer.producePurchaseData();
-
-        KafkaStreams kafkaStreams = new KafkaStreams(streamsBuilder.build(),streamsConfig);
-        LOG.info("ZMart First Kafka Streams Application Started");
+        KafkaStreams kafkaStreams = new KafkaStreams(streamsBuilder.build(), getProperties());
         kafkaStreams.start();
-        Thread.sleep(65000);
-        LOG.info("Shutting down the Kafka Streams Application now");
-        kafkaStreams.close();
+        Thread.sleep(5000);
+
+        //关闭进程
         MockDataProducer.shutdown();
+        kafkaStreams.close();
+
     }
 
 
