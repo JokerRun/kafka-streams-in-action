@@ -106,6 +106,7 @@ public class ZMartKafkaStreamsAdvancedReqsApp {
 
 
 
+
          // security Requirements to record transactions for certain employee
         ForeachAction<String, Purchase> purchaseForeachAction = (key, purchase) ->
                 SecurityDBService.saveRecord(purchase.getPurchaseDate(), purchase.getEmployeeId(), purchase.getItemPurchased());

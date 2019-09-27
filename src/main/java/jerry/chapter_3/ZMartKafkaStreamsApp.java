@@ -16,6 +16,7 @@
 
 package jerry.chapter_3;
 
+import bbejeck.chapter_3.service.SecurityDBService;
 import bbejeck.clients.producer.MockDataProducer;
 import bbejeck.model.Purchase;
 import bbejeck.model.PurchasePattern;
@@ -35,6 +36,7 @@ import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.Properties;
 
 
@@ -63,6 +65,9 @@ public class ZMartKafkaStreamsApp {
         branchs[0].to("coffee",Produced.with(stringSerde,purchaseSerde));
         branchs[1].to("electronics",Produced.with(stringSerde,purchaseSerde));
 
+        //==============foreach==============
+        masked.filter((k,v)->v.getEmployeeId().equals("000000"))
+                .foreach((k, v) -> SecurityDBService.saveRecord(new Date(),v.getEmployeeId(),v.getItemPurchased()) );
 
         KafkaStreams kafkaStreams = new KafkaStreams(streamsBuilder.build(), getProperties());
         kafkaStreams.start();
