@@ -14,11 +14,7 @@ import com.github.javafaker.Name;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -48,7 +44,7 @@ public class DataGenerator {
 
     public static List<String> generateRandomText() {
         List<String> phrases = new ArrayList<>(NUMBER_TEXT_STATEMENTS);
-        Faker faker = new Faker();
+        Faker faker = new Faker(new Locale("zh-CN"));
 
         for (int i = 0; i < NUMBER_TEXT_STATEMENTS; i++) {
             ChuckNorris chuckNorris = faker.chuckNorris();

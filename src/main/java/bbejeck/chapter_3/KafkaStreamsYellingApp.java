@@ -40,7 +40,7 @@ public class KafkaStreamsYellingApp {
 
         //Used only to produce data for this application, not typical usage
         MockDataProducer.produceRandomTextData();
-
+        Thread.sleep(35000);
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "yelling_app_id");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");

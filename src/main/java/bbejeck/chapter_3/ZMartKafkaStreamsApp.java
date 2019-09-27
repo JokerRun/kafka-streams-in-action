@@ -75,7 +75,7 @@ public class ZMartKafkaStreamsApp {
 
 
         // used only to produce data for this application, not typical usage
-        MockDataProducer.producePurchaseData();
+//        MockDataProducer.producePurchaseData();
 
         KafkaStreams kafkaStreams = new KafkaStreams(streamsBuilder.build(),streamsConfig);
         LOG.info("ZMart First Kafka Streams Application Started");
